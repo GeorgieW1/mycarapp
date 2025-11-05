@@ -1,0 +1,45 @@
+name: ladipo_app
+description: A starting point for the Ladipo App, featuring simulated authentication and car service features.
+publish_to: 'none' # The default for non-public packages.
+
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  # The following dependencies were added or ensured for our app logic and UI:
+  
+  # For persistent user data storage (used in AuthService)
+  shared_preferences: ^2.2.0 
+  
+  # For managing the user authentication stream (BehaviorSubject)
+  rxdart: ^0.27.7
+  
+  # For formatting dates and times (used in Consultations and Expert Profile)
+  intl: ^0.18.1 # <-- Ensures DateFormat is available
+  
+  # Standard Flutter icons
+  cupertino_icons: ^1.0.6
+  dots_indicator: ^3.0.0 
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+
+flutter:
+  uses-material-design: true
+
+  # Ensure these assets sections are uncommented and correct if you're using them
+  # assets:
+  # 	 - assets/google_logo.png 
+  
+  # fonts:
+  # 	 - family: Inter 
+  # 	   fonts:
+  # 	     - asset: assets/fonts/Inter-Regular.ttf 
+  # 	     - asset: assets/fonts/Inter-Bold.ttf
+  # 	       weight: 700
