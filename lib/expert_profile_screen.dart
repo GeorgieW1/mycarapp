@@ -12,22 +12,53 @@ class ExpertProfileScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: kLightGray,
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        foregroundColor: kTextColor,
-        title: Text(expert.name, style: kHeading2),
-        centerTitle: true,
-      ),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            _buildProfileHeader(expert),
-            _buildActionButtons(),
-            _buildSessionHistory(),
+    return DefaultTabController(
+      length: 2,
+      child: Scaffold(
+        backgroundColor: kLightGray,
+        appBar: AppBar(
+          backgroundColor: Colors.white,
+          elevation: 0,
+          foregroundColor: kTextColor,
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back, color: kTextColor),
+            onPressed: () => Navigator.pop(context),
+          ),
+          title: Text(expert.name, style: kHeading2),
+          centerTitle: true,
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.share_outlined, color: kTextColor),
+              onPressed: () {},
+            ),
           ],
+          bottom: TabBar(
+            labelColor: kPrimaryColor,
+            unselectedLabelColor: kSubtextGray,
+            indicatorColor: kPrimaryColor,
+            tabs: const [
+              Tab(text: 'Session History'),
+              Tab(text: 'Reviews'),
+            ],
+          ),
+        ),
+        body: SingleChildScrollView(
+          child: Column(
+            children: [
+              _buildProfileHeader(expert),
+              _buildActionButtons(),
+              const SizedBox(height: 10),
+              SizedBox(
+                height: 400,
+                child: TabBarView(
+                  children: [
+                    _buildSessionHistory(),
+                    _buildReviews(),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -119,19 +150,92 @@ class ExpertProfileScreen extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Session History', style: kHeading2),
-          const SizedBox(height: 15),
-          _buildHistoryItem(Icons.call_made, 'Outgoing Call', '3 min 24 secs', DateTime.now().subtract(const Duration(days: 2, hours: 5))),
-          _buildHistoryItem(Icons.call_received, 'Incoming Call', '4 min 10 secs', DateTime.now().subtract(const Duration(days: 2, hours: 7))),
-          _buildHistoryItem(Icons.call_missed_outgoing, 'Missed Call', '6:00 PM', DateTime.now().subtract(const Duration(days: 3, hours: 2))),
-          _buildHistoryItem(Icons.chat_bubble_outline, 'Chat Consultation', '15 messages exchanged', DateTime.now().subtract(const Duration(days: 4))),
+          Padding(
+            padding: const EdgeInsets.only(bottom: 10.0),
+            child: Text('Today', style: kHeading2.copyWith(fontSize: 16)),
+          ),
+          _buildHistoryItem(Icons.call_made, 'Outgoing call', 'Toyota Corolla 2008', '24 mins', DateTime.now().subtract(const Duration(hours: 1))),
+          _buildHistoryItem(Icons.call_received, 'Incoming call', 'Toyota Corolla 2008', '12 mins', DateTime.now().subtract(const Duration(hours: 3))),
+          _buildHistoryItem(Icons.call_missed_outgoing, 'Missed call', 'Toyota Corolla 2008', '6:00 PM', DateTime.now().subtract(const Duration(days: 1))),
         ],
       ),
     );
   }
 
-  Widget _buildHistoryItem(IconData icon, String title, String durationOrTime, DateTime date) {
-    final dateFormat = DateFormat('MMM d, h:mm a');
+  Widget _buildReviews() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(bottom: 10.0),
+            child: Text('Customer Reviews', style: kHeading2.copyWith(fontSize: 16)),
+          ),
+          _buildReviewItem('John Doe', 'Great service! Very professional.', 5, DateTime.now().subtract(const Duration(days: 2))),
+          _buildReviewItem('Jane Smith', 'Quick response and helpful advice.', 5, DateTime.now().subtract(const Duration(days: 5))),
+          _buildReviewItem('Mike Johnson', 'Could be better communication.', 4, DateTime.now().subtract(const Duration(days: 7))),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildReviewItem(String name, String review, int rating, DateTime date) {
+    final dateFormat = DateFormat('MMM d, yyyy');
+    return Card(
+      elevation: 0.5,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      margin: const EdgeInsets.only(bottom: 10),
+      child: Padding(
+        padding: const EdgeInsets.all(12.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                CircleAvatar(
+                  radius: 16,
+                  backgroundColor: kAccentBlue,
+                  child: Text(
+                    name[0].toUpperCase(),
+                    style: kBodyText.copyWith(fontWeight: FontWeight.w600, fontSize: 12),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(name, style: kBodyText.copyWith(fontWeight: FontWeight.w600)),
+                      Row(
+                        children: List.generate(5, (index) {
+                          return Icon(
+                            Icons.star,
+                            size: 14,
+                            color: index < rating ? Colors.amber : Colors.grey[300],
+                          );
+                        }),
+                      ),
+                    ],
+                  ),
+                ),
+                Text(
+                  dateFormat.format(date),
+                  style: kBodyText.copyWith(fontSize: 12, color: kSubtextGray),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Text(review, style: kBodyText.copyWith(color: kSubtextGray)),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHistoryItem(IconData icon, String title, String car, String durationOrTime, DateTime date) {
+    final timeFormat = DateFormat('h:mm a');
     return Card(
       elevation: 0.5,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -139,14 +243,14 @@ class ExpertProfileScreen extends StatelessWidget {
       child: ListTile(
         leading: Icon(icon, color: kPrimaryColor, size: 24),
         title: Text(title, style: kBodyText.copyWith(fontWeight: FontWeight.w600)),
-        subtitle: Text(durationOrTime, style: kBodyText.copyWith(color: Colors.grey[600])),
+        subtitle: Text(car, style: kBodyText.copyWith(color: Colors.grey[600])),
         trailing: Column(
           crossAxisAlignment: CrossAxisAlignment.end,
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text(dateFormat.format(date), style: kBodyText.copyWith(fontSize: 12, color: Colors.grey)),
+            Text(durationOrTime, style: kBodyText.copyWith(fontSize: 12, color: Colors.grey)),
             const SizedBox(height: 4),
-            Icon(Icons.arrow_forward_ios, size: 14, color: Colors.grey[400]),
+            Text(timeFormat.format(date), style: kBodyText.copyWith(fontSize: 12, color: Colors.grey)),
           ],
         ),
       ),

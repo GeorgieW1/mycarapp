@@ -52,13 +52,28 @@ class Consultation {
 
 // --- Mock Data for UI Demonstration ---
 
+// Helper function to get car image (checks assets first, then falls back to network/placeholder)
+String getCarImageUrl(String make, String model) {
+  // Try asset first (e.g., assets/images/cars/toyota_corolla.png)
+  // For now, using placeholder - replace with actual asset path when images are added
+  return 'https://placehold.co/300x200/0099CD/FFFFFF?text=${make}+${model}';
+}
+
+// Helper function to get expert image (checks assets first, then falls back to network/placeholder)
+String getExpertImageUrl(String name) {
+  // Try asset first (e.g., assets/images/experts/tunde_abraham.png)
+  // For now, using placeholder - replace with actual asset path when images are added
+  final initials = name.split(' ').map((n) => n[0]).take(2).join();
+  return 'https://placehold.co/100x100/0099CD/FFFFFF?text=$initials';
+}
+
 // Images are placeholders or simple icons.
 final mockCar = Car(
   make: 'Toyota',
   model: 'Corolla',
   year: 2008,
   registration: 'LAG-345-AE',
-  imageUrl: '[https://placehold.co/100x60/1E3A8A/FFFFFF?text=Car+Icon](https://placehold.co/100x60/1E3A8A/FFFFFF?text=Car+Icon)',
+  imageUrl: 'assets/images/cars/1001057654.jpg', // Silver car image
 );
 
 final mockExperts = [
@@ -67,28 +82,28 @@ final mockExperts = [
     specialization: 'Mechanic',
     rating: 4.8,
     location: 'Ikeja, Lagos',
-    imageUrl: '[https://placehold.co/60x60/3A7BD5/FFFFFF?text=TA](https://placehold.co/60x60/3A7BD5/FFFFFF?text=TA)',
+    imageUrl: 'assets/images/experts/1001057657.jpg', // Expert in orange apron
   ),
   Expert(
     name: 'Bola Salako',
     specialization: 'Electronics',
     rating: 4.5,
     location: 'Surulere, Lagos',
-    imageUrl: '[https://placehold.co/60x60/1E3A8A/FFFFFF?text=BS](https://placehold.co/60x60/1E3A8A/FFFFFF?text=BS)',
+    imageUrl: 'assets/images/experts/1001057677.jpg', // Expert in green turtleneck
   ),
   Expert(
     name: 'Anita Wilson',
     specialization: 'Tyre Specialist',
     rating: 4.9,
     location: 'Yaba, Lagos',
-    imageUrl: '[https://placehold.co/60x60/3A7BD5/FFFFFF?text=AW](https://placehold.co/60x60/3A7BD5/FFFFFF?text=AW)',
+    imageUrl: 'assets/images/experts/1001057657.jpg', // Using available expert image
   ),
   Expert(
     name: 'John Adetunji',
     specialization: 'Brakes',
     rating: 4.7,
     location: 'Oshodi, Lagos',
-    imageUrl: '[https://placehold.co/60x60/1E3A8A/FFFFFF?text=JA](https://placehold.co/60x60/1E3A8A/FFFFFF?text=JA)',
+    imageUrl: 'assets/images/experts/1001057677.jpg', // Using available expert image
   ),
 ];
 

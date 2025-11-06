@@ -7,6 +7,13 @@ import 'shared_widgets.dart'; // Shared styles and widgets
 import 'consults_screen.dart'; // Consultations Page
 import 'onboarding_flow.dart'; // Import the onboarding flow
 import 'package:rxdart/rxdart.dart';
+import 'profile_screen.dart';
+import 'cart_screen.dart';
+import 'my_cars_screen.dart';
+import 'cars_screen.dart';
+import 'notifications_screen.dart';
+import 'experts_screen.dart';
+import 'chats_screen.dart';
 
 // --- Global Theme & Styles (Now leveraging shared_widgets.dart) ---
 final ThemeData kAppTheme = ThemeData(
@@ -232,9 +239,10 @@ class _MainAppShellState extends State<MainAppShell> {
         onLogout: widget.onLogout,
         onNavigate: _onItemTapped,
       ),
+      const ExpertsScreen(),
       const ConsultsScreen(),
-      const Center(child: Text('My Cars Page')),
-      const Center(child: Text('Profile Page')),
+      const ChatsScreen(),
+      ProfileScreen(user: widget.user, onLogout: widget.onLogout),
     ];
 
     return Scaffold(

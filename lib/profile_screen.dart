@@ -3,21 +3,27 @@
 import 'package:flutter/material.dart';
 import 'shared_widgets.dart'; // Import shared widgets and constants
 import 'user_model.dart'; // Import User model
+import 'my_cars_screen.dart';
+import 'my_experts_screen.dart';
+import 'edit_profile_screen.dart';
 
 class ProfileScreen extends StatelessWidget {
   final User user; // Pass the current user for profile details
-  const ProfileScreen({Key? key, required this.user}) : super(key: key);
+  final VoidCallback onLogout;
+  
+  const ProfileScreen({Key? key, required this.user, required this.onLogout}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: kBackgroundColor,
       appBar: AppBar(
-        title: const Text('Profile & Settings', style: kLargeTitle),
         backgroundColor: Colors.white,
         elevation: 0,
-        centerTitle: true,
+        automaticallyImplyLeading: false, // Remove back button when accessed from bottom nav
+        title: Text('My Profile', style: kHeading1.copyWith(fontSize: 20)),
+        centerTitle: false,
       ),
-      backgroundColor: kBackgroundColor,
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -25,23 +31,41 @@ class ProfileScreen extends StatelessWidget {
           children: [
             _buildProfileHeader(context),
             const SizedBox(height: 20),
-
-            _buildProfileSection(
-              context,
-              title: 'My Profile',
-              icon: Icons.person_outline,
-              onTap: () {
-                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('My Profile tapped')));
-                // Navigate to a detailed profile editing screen
+            ElevatedButton.icon(
+              onPressed: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => EditProfileScreen(user: user),
+                  ),
+                );
               },
+              icon: const Icon(Icons.edit_outlined, color: kPrimaryColor),
+              label: Text('Edit profile', style: kBodyText.copyWith(color: kPrimaryColor)),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.white,
+                elevation: 0,
+                side: const BorderSide(color: kPrimaryColor),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                padding: const EdgeInsets.symmetric(vertical: 12),
+              ),
             ),
+            const SizedBox(height: 30),
             _buildProfileSection(
               context,
               title: 'My Cars',
               icon: Icons.directions_car_outlined,
               onTap: () {
-                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('My Cars tapped')));
-                // Navigate to a list of user's cars
+                Navigator.of(context).push(
+                  MaterialPageRoute(builder: (context) => const MyCarsScreen()),
+                );
+              },
+            ),
+            _buildProfileSection(
+              context,
+              title: 'Dashboard',
+              icon: Icons.dashboard_outlined,
+              onTap: () {
+                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Dashboard coming soon!')));
               },
             ),
             _buildProfileSection(
@@ -49,17 +73,17 @@ class ProfileScreen extends StatelessWidget {
               title: 'My Experts',
               icon: Icons.people_outline,
               onTap: () {
-                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('My Experts tapped')));
-                // Navigate to a list of preferred experts
+                Navigator.of(context).push(
+                  MaterialPageRoute(builder: (context) => const MyExpertsScreen()),
+                );
               },
             ),
             _buildProfileSection(
               context,
-              title: 'App Settings',
+              title: 'App settings',
               icon: Icons.settings_outlined,
               onTap: () {
-                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('App Settings tapped')));
-                // Navigate to app settings
+                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('App Settings coming soon!')));
               },
             ),
             const SizedBox(height: 30),
@@ -67,8 +91,7 @@ class ProfileScreen extends StatelessWidget {
             Center(
               child: TextButton(
                 onPressed: () {
-                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Log out tapped')));
-                  // In a real app, this would trigger the actual logout mechanism
+                  onLogout();
                 },
                 child: const Text('Log Out', style: TextStyle(color: Colors.red, fontSize: 16)),
               ),
@@ -91,18 +114,17 @@ class ProfileScreen extends StatelessWidget {
               radius: 40,
               backgroundColor: kPrimaryColor,
               child: Icon(Icons.person, size: 50, color: Colors.white),
-              // backgroundImage: NetworkImage('URL_TO_PROFILE_IMAGE'), // Use actual image
             ),
             const SizedBox(width: 20),
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  user.displayName, // Display user's name from the User model
+                  user.displayName,
                   style: kLargeTitle.copyWith(fontSize: 22),
                 ),
                 Text(
-                  user.email, // Display user's email
+                  user.email,
                   style: kBodyText.copyWith(color: Colors.grey[600]),
                 ),
               ],

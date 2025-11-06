@@ -143,11 +143,12 @@ class HomeScreen extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Image.network(
-            _userCar.imageUrl,
+          SmartImage(
+            imageUrl: _userCar.imageUrl,
             width: 100,
             height: 60,
-            errorBuilder: (context, error, stackTrace) => const Icon(Icons.directions_car, size: 60, color: kDeepBlue),
+            fit: BoxFit.cover,
+            errorWidget: const Icon(Icons.directions_car, size: 60, color: kDeepBlue),
           ),
           const SizedBox(width: 15),
           Expanded(
@@ -180,7 +181,7 @@ class HomeScreen extends StatelessWidget {
 
   Widget _buildExpertsAvailableList() {
     return SizedBox(
-      height: 200, // Height to accommodate the card design with action buttons
+      height: 220, // Increased height to fix overflow issue
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
         itemCount: _availableExperts.length,
@@ -227,27 +228,12 @@ class HomeScreen extends StatelessWidget {
           radius: 20,
           backgroundColor: kAccentBlue,
           child: ClipOval(
-            child: Image.network(
-              expert.imageUrl,
+            child: SmartImage(
+              imageUrl: expert.imageUrl,
               fit: BoxFit.cover,
               width: 40,
               height: 40,
-              errorBuilder: (BuildContext context, Object error, StackTrace? stackTrace) {
-                return Icon(Icons.person, color: kDeepBlue, size: 28); // Placeholder icon
-              },
-              loadingBuilder: (BuildContext context, Widget child, ImageChunkEvent? loadingProgress) {
-                if (loadingProgress == null) {
-                  return child;
-                }
-                return Center(
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    value: loadingProgress.expectedTotalBytes != null
-                        ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes!
-                        : null,
-                  ),
-                );
-              },
+              errorWidget: const Icon(Icons.person, color: kDeepBlue, size: 28),
             ),
           ),
         ),

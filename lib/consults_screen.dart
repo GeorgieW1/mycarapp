@@ -204,9 +204,16 @@ class _ConsultsScreenState extends State<ConsultsScreen> with SingleTickerProvid
           child: ListTile(
             leading: CircleAvatar(
               radius: 24,
-              backgroundImage: NetworkImage(consult.expert.imageUrl),
               backgroundColor: kAccentBlue,
-              onBackgroundImageError: (exception, stackTrace) => const Icon(Icons.person, color: kDeepBlue),
+              child: ClipOval(
+                child: SmartImage(
+                  imageUrl: consult.expert.imageUrl,
+                  width: 48,
+                  height: 48,
+                  fit: BoxFit.cover,
+                  errorWidget: const Icon(Icons.person, color: kDeepBlue, size: 24),
+                ),
+              ),
             ),
             title: Text(consult.expert.name, style: kBodyText.copyWith(fontWeight: FontWeight.w600)),
             subtitle: Column(

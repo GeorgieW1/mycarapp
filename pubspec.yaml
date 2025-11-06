@@ -33,13 +33,20 @@ dev_dependencies:
 flutter:
   uses-material-design: true
 
-  # Ensure these assets sections are uncommented and correct if you're using them
-  # assets:
-  # 	 - assets/google_logo.png 
+  # Assets (images, logos, etc.)
+  assets:
+    # Logo
+    - assets/images/1001057869.jpg
+    # Car images
+    - assets/images/cars/1001057654.jpg
+    - assets/images/cars/1001057668.jpg
+    # Expert images
+    - assets/images/experts/1001057657.jpg
+    - assets/images/experts/1001057677.jpg
   
   # fonts:
   # 	 - family: Inter 
-  # 	   fonts:
-  # 	     - asset: assets/fonts/Inter-Regular.ttf 
-  # 	     - asset: assets/fonts/Inter-Bold.ttf
-  # 	       weight: 700
+  # 	   fonts:
+  # 	     - asset: assets/fonts/Inter-Regular.ttf 
+  # 	     - asset: assets/fonts/Inter-Bold.ttf
+  # 	       weight: 700

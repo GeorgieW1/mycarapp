@@ -1,7 +1,26 @@
 // lib/cart_screen.dart
 
 import 'package:flutter/material.dart';
-import 'shared_widgets.dart'; // Import shared widgets and constants
+import 'shared_widgets.dart';
+import 'order_history_screen.dart';
+
+class CartItem {
+  final String id;
+  final String name;
+  final String imageUrl;
+  final double price;
+  int quantity;
+
+  CartItem({
+    required this.id,
+    required this.name,
+    required this.imageUrl,
+    required this.price,
+    this.quantity = 1,
+  });
+
+  double get total => price * quantity;
+}
 
 class CartScreen extends StatefulWidget {
   const CartScreen({Key? key}) : super(key: key);
@@ -11,27 +30,86 @@ class CartScreen extends StatefulWidget {
 }
 
 class _CartScreenState extends State<CartScreen> {
-  // Simulate active/empty cart state
-  bool _isCartEmpty = false; // Set to true to see empty cart state
+  // Mock cart items - in real app, this would come from a state management solution
+  List<CartItem> _cartItems = [
+    CartItem(
+      id: '1',
+      name: 'Front Brake Pads (Bosch Premium)',
+      imageUrl: 'https://placehold.co/80x80/3A7BD5/FFFFFF?text=BP',
+      price: 18500.0,
+      quantity: 1,
+    ),
+    CartItem(
+      id: '2',
+      name: 'Car Battery (Solite 75AH)',
+      imageUrl: 'https://placehold.co/80x80/1E3A8A/FFFFFF?text=CB',
+      price: 78430.0,
+      quantity: 1,
+    ),
+  ];
+
+  bool get _isCartEmpty => _cartItems.isEmpty;
+
+  double get _subtotal => _cartItems.fold(0.0, (sum, item) => sum + item.total);
+  double get _deliveryFee => 2000.0;
+  double get _discount => 0.0;
+  double get _total => _subtotal + _deliveryFee - _discount;
+
+  void _updateQuantity(CartItem item, int delta) {
+    setState(() {
+      item.quantity += delta;
+      if (item.quantity <= 0) {
+        _cartItems.remove(item);
+      }
+    });
+  }
+
+  void _removeItem(CartItem item) {
+    setState(() {
+      _cartItems.remove(item);
+    });
+  }
+
+  void _confirmOrder() {
+    if (_cartItems.isEmpty) return;
+    
+    // Navigate to order history or show success message
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => const OrderHistoryScreen(),
+      ),
+    );
+    
+    // Clear cart after order confirmation
+    setState(() {
+      _cartItems.clear();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: kBackgroundColor,
       appBar: AppBar(
-        title: const Text('Cart', style: kLargeTitle),
         backgroundColor: Colors.white,
         elevation: 0,
-        centerTitle: true,
+        automaticallyImplyLeading: false, // Remove back button when accessed from bottom nav
+        title: Text('Order Cart', style: kHeading1.copyWith(fontSize: 20)),
+        centerTitle: false,
         actions: [
           IconButton(
-            icon: const Icon(Icons.history, color: Colors.black87),
+            icon: const Icon(Icons.more_vert, color: kTextColor),
             onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Order History tapped')));
+              // Navigate to order history
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => const OrderHistoryScreen(),
+                ),
+              );
             },
           ),
         ],
       ),
-      backgroundColor: kBackgroundColor,
       body: _isCartEmpty ? _buildEmptyCart() : _buildActiveCart(),
     );
   }
@@ -41,24 +119,31 @@ class _CartScreenState extends State<CartScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          // Placeholder image or icon for empty cart
-          Icon(Icons.shopping_cart_outlined, size: 80, color: Colors.grey[400]),
-          const SizedBox(height: 20),
-          Text(
-            'Your cart is currently empty.',
-            style: kLargeTitle.copyWith(fontSize: 20, color: Colors.grey[600]),
-          ),
-          const SizedBox(height: 10),
-          const Text(
-            'Add some items to get started!',
-            style: kBodyText,
+          // Empty cart illustration
+          Container(
+            width: 200,
+            height: 200,
+            decoration: BoxDecoration(
+              color: kLightGray,
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              Icons.shopping_cart_outlined,
+              size: 100,
+              color: kSubtextGray,
+            ),
           ),
           const SizedBox(height: 30),
-          PrimaryButton(
-            text: 'Browse Products',
-            onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Browse products tapped')));
-            },
+          Text(
+            'Your cart is currently empty',
+            style: kHeading1.copyWith(fontSize: 22),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 10),
+          Text(
+            'Start shopping to add items to your cart.',
+            style: kBodyText.copyWith(color: kSubtextGray),
+            textAlign: TextAlign.center,
           ),
         ],
       ),
@@ -66,169 +151,173 @@ class _CartScreenState extends State<CartScreen> {
   }
 
   Widget _buildActiveCart() {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(16.0),
-      child: Column(
+    return Column(
+      children: [
+        Expanded(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Cart Items
+                ..._cartItems.map((item) => _buildCartItem(item)).toList(),
+                const SizedBox(height: 24),
+                
+                // Order Summary
+                Text('Order Summary', style: kHeading2.copyWith(fontSize: 18)),
+                const SizedBox(height: 12),
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: kLightGray,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Column(
+                    children: [
+                      _buildSummaryRow('Subtotal', 'N${_subtotal.toStringAsFixed(0).replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]},')}'),
+                      const SizedBox(height: 8),
+                      _buildSummaryRow('Delivery Fee', 'N${_deliveryFee.toStringAsFixed(0).replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]},')}'),
+                      const SizedBox(height: 8),
+                      _buildSummaryRow('Discount', 'N${_discount.toStringAsFixed(0)}'),
+                      const Divider(height: 24, color: Color(0xFFE5E7EB)),
+                      _buildSummaryRow('Total', 'N${_total.toStringAsFixed(0).replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]},')}', isTotal: true),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 40),
+              ],
+            ),
+          ),
+        ),
+        // Confirm Order Button
+        Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: SizedBox(
+            width: double.infinity,
+            height: 50,
+            child: ElevatedButton(
+              onPressed: _confirmOrder,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: kPrimaryColor,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                elevation: 0,
+              ),
+              child: Text('Confirm Order', style: kButtonText),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildCartItem(CartItem item) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFFE5E7EB)),
+      ),
+      child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Order Summary', style: kLargeTitle.copyWith(fontSize: 20)),
-          const SizedBox(height: 15),
-          _buildCartItem(
-            'Premium Synthetic Oil',
-            'N18,500',
-            'assets/oil_placeholder.png', // Placeholder asset
+          // Product Image
+          Container(
+            width: 80,
+            height: 80,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(8),
+              color: kLightGray,
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: Image.network(
+                item.imageUrl,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) => const Icon(
+                  Icons.image_not_supported,
+                  color: kSubtextGray,
+                ),
+              ),
+            ),
           ),
-          _buildCartItem(
-            'Car Battery 75AH',
-            'N77,360',
-            'assets/battery_placeholder.png', // Placeholder asset
-          ),
-          const SizedBox(height: 20),
-          
-          _buildSummaryRow('Subtotal', 'N95,860'),
-          _buildSummaryRow('Shipping', 'N2,000'),
-          const Divider(),
-          _buildSummaryRow('Total', 'N97,860', isTotal: true),
-          const SizedBox(height: 30),
-          PrimaryButton(
-            text: 'Confirm Order',
-            onPressed: () {
-              // Simulate order confirmation flow
-              Navigator.of(context).push(MaterialPageRoute(builder: (context) => const OrderConfirmationScreen()));
-            },
+          const SizedBox(width: 12),
+          // Product Details
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  item.name,
+                  style: kBodyText.copyWith(fontWeight: FontWeight.w600, fontSize: 15),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'N${item.price.toStringAsFixed(0).replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]},')}',
+                  style: kHeading2.copyWith(fontSize: 16, color: kDeepBlue),
+                ),
+                const SizedBox(height: 12),
+                // Quantity Controls
+                Row(
+                  children: [
+                    _buildQuantityButton(Icons.remove, () => _updateQuantity(item, -1)),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                      child: Text(
+                        '${item.quantity}',
+                        style: kBodyText.copyWith(fontWeight: FontWeight.w600, fontSize: 16),
+                      ),
+                    ),
+                    _buildQuantityButton(Icons.add, () => _updateQuantity(item, 1)),
+                  ],
+                ),
+              ],
+            ),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildCartItem(String title, String price, String imageAsset) {
-    return Card(
-      margin: const EdgeInsets.only(bottom: 10),
-      elevation: 1,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Padding(
-        padding: const EdgeInsets.all(12.0),
-        child: Row(
-          children: [
-            Container(
-              width: 70,
-              height: 70,
-              decoration: BoxDecoration(
-                color: Colors.grey[200],
-                borderRadius: BorderRadius.circular(8),
-                image: DecorationImage(
-                  // Use a placeholder image or actual asset
-                  image: AssetImage(imageAsset),
-                  fit: BoxFit.cover,
-                  onError: (exception, stackTrace) => const Icon(Icons.image_not_supported, color: Colors.grey),
-                ),
-              ),
-              child: Image.asset(imageAsset, errorBuilder: (context, error, stackTrace) => const Icon(Icons.image_not_supported, color: Colors.grey)), // Placeholder if image not found
-            ),
-            const SizedBox(width: 15),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                  const SizedBox(height: 4),
-                  Text(price, style: kBodyText.copyWith(color: kPrimaryColor, fontWeight: FontWeight.bold)),
-                ],
-              ),
-            ),
-            IconButton(
-              icon: const Icon(Icons.delete_outline, color: Colors.red),
-              onPressed: () {
-                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Remove $title from cart')));
-              },
-            ),
-          ],
+  Widget _buildQuantityButton(IconData icon, VoidCallback onPressed) {
+    return GestureDetector(
+      onTap: onPressed,
+      child: Container(
+        width: 32,
+        height: 32,
+        decoration: BoxDecoration(
+          color: kPrimaryColor.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(8),
         ),
+        child: Icon(icon, size: 18, color: kPrimaryColor),
       ),
     );
   }
 
   Widget _buildSummaryRow(String label, String value, {bool isTotal = false}) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 5.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            label,
-            style: isTotal
-                ? kLargeTitle.copyWith(fontSize: 18)
-                : const TextStyle(fontSize: 16, color: Colors.black87),
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          label,
+          style: kBodyText.copyWith(
+            color: isTotal ? kTextColor : kSubtextGray,
+            fontWeight: isTotal ? FontWeight.w600 : FontWeight.w400,
+            fontSize: isTotal ? 16 : 14,
           ),
-          Text(
-            value,
-            style: isTotal
-                ? kLargeTitle.copyWith(fontSize: 18, color: kPrimaryColor)
-                : const TextStyle(fontSize: 16, color: Colors.black87),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-// Separate screen for order confirmation as shown in Image 4
-class OrderConfirmationScreen extends StatelessWidget {
-  const OrderConfirmationScreen({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Order Confirmed', style: kLargeTitle),
-        backgroundColor: Colors.white,
-        elevation: 0,
-        centerTitle: true,
-      ),
-      backgroundColor: kBackgroundColor,
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            CircleAvatar(
-              radius: 60,
-              backgroundColor: Colors.green.withOpacity(0.1),
-              child: const Icon(Icons.check_circle_outline, color: Colors.green, size: 80),
-            ),
-            const SizedBox(height: 30),
-            Text(
-              'Your delivery has been confirmed!',
-              style: kLargeTitle.copyWith(fontSize: 22, color: Colors.green),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 10),
-            const Text(
-              'Thank you for your purchase.',
-              style: kBodyText,
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 40),
-            PrimaryButton(
-              text: 'Back to Home',
-              onPressed: () {
-                // Navigate back to the dashboard's home tab
-                Navigator.of(context).popUntil((route) => route.isFirst); 
-              },
-            ),
-            const SizedBox(height: 10),
-            TextButton(
-              onPressed: () {
-                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('View Order Details tapped')));
-              },
-              child: Text(
-                'View Order Details',
-                style: TextStyle(color: kPrimaryColor, fontWeight: FontWeight.bold),
-              ),
-            ),
-          ],
         ),
-      ),
+        Text(
+          value,
+          style: kBodyText.copyWith(
+            color: isTotal ? kDeepBlue : kTextColor,
+            fontWeight: isTotal ? FontWeight.w700 : FontWeight.w600,
+            fontSize: isTotal ? 18 : 14,
+          ),
+        ),
+      ],
     );
   }
 }
